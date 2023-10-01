@@ -27,7 +27,14 @@ func listUsers(c echo.Context) error {
 }
 
 func findUser(c echo.Context) error {
-    return c.String(http.StatusOK, "Find Users")
+    cc := c.(helper.CustomContext)
+    user := models.User{}
+
+    result := cc.Database.Where(map[string]interface{}{ "ID" : cc.Param("id")  }).First(&user)
+    if result.Error != nil {
+        return c.JSON(http.StatusBadRequest, helper.ResponseErr(result.Error.Error()))
+    }
+    return c.JSON(http.StatusOK, helper.ResponseOK("User fetched", user.Resource()))
 }
 
 func createUsers(c echo.Context) error {
@@ -49,21 +56,45 @@ func createUsers(c echo.Context) error {
         return c.JSON(http.StatusBadGateway, helper.ResponseErr("Failed to create user in database"))
     }
 
+    cc.Database.Save(&user)
+
     return c.JSON(http.StatusOK, helper.ResponseOK("User creation success", user.Resource()))
 }
 
 func updateUsers(c echo.Context) error {
-    return c.String(http.StatusOK, "Update Users")
+    cc := c.(helper.CustomContext)
+    user := models.User{}
+    result := cc.Database.Where(map[string]interface{}{ "ID" : cc.Param("id")  }).First(&user)
+    if result.Error != nil {
+        return c.JSON(http.StatusBadRequest, helper.ResponseErr(result.Error.Error()))
+    }
+
+    user.Name = helper.ChooseString(c.FormValue("name"), user.Name)
+    user.Email = helper.ChooseString(c.FormValue("email"), user.Email)
+
+    password := c.FormValue("password")
+    if len(password) != 0 {
+        if strings.Compare(password, c.FormValue("password_confirmation")) != 0 {
+            return c.JSON(http.StatusBadRequest, helper.ResponseErr("Password is not confirmed"))
+        }
+        user.Password = password
+    }
+
+    cc.Database.Save(&user)
+
+    return c.JSON(http.StatusOK, helper.ResponseOK("User updated", user.Resource()))
 }
 
 func destroyUsers(c echo.Context) error {
-    return c.String(http.StatusOK, "Destroy Users")
+    cc := c.(helper.CustomContext)
+    cc.Database.Delete(&models.User{}, cc.Param("id"))
+    return c.JSON(http.StatusOK, helper.ResponseOK("User is destroyed", nil))
 }
 
 func UserController(g *echo.Group) {
     g.GET("", listUsers)
-    g.GET(":id", findUser)
+    g.GET("/:id", findUser)
     g.POST("", createUsers)
-    g.PUT("", updateUsers)
-    g.DELETE(":id", destroyUsers)
+    g.PUT("/:id", updateUsers)
+    g.DELETE("/:id", destroyUsers)
 }

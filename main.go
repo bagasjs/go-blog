@@ -41,15 +41,15 @@ func main() {
             var err error
             var cwd string
             if cwd, err = os.Getwd(); err != nil {
-                panic("Failed to setup your application")
+                panic(err.Error())
             }
-            if err = os.Mkdir(path.Join(cwd, "res"), os.ModePerm); err != nil {
-                panic("Failed to setup your application")
+            if err = os.Mkdir(path.Join(cwd, "res"), 664); err != nil {
+                panic(err.Error())
             }
 
             db, err := gorm.Open(sqlite.Open(path.Join(cwd, "res", "db.sqlite3")), &gorm.Config{})
             if err != nil {
-                panic("Failed to open database connection")
+                panic(err.Error())
             }
 
             db.AutoMigrate(&models.User{})
