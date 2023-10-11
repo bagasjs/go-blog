@@ -101,7 +101,7 @@ func Serve() {
     var g *echo.Group
 
     g = e.Group("/api/users")
-    controllers.UserController(g)
+    controllers.UserAPIController(g)
     g = e.Group("/api/posts")
     controllers.PostController(g)
     g = e.Group("/api/comments")
@@ -109,5 +109,13 @@ func Serve() {
     g = e.Group("/api/tags")
     controllers.TagController(g)
 
+    g = e.Group("/api/users")
+    controllers.UserAPIController(g)
+    g = e.Group("/api/posts")
+    controllers.PostController(g)
+    g = e.Group("/api/comments")
+    controllers.CommentController(g)
+    g = e.Group("/api/tags")
+    controllers.TagController(g)
     e.Logger.Fatal(e.Start(":3000"))
 }

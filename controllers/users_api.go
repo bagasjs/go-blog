@@ -9,7 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func listUsers(c echo.Context) error {
+func listUsersAPI(c echo.Context) error {
     cc := c.(helper.CustomContext)
     var users []models.User
     result := cc.Database.Find(&users)
@@ -26,7 +26,7 @@ func listUsers(c echo.Context) error {
     return cc.JSON(http.StatusOK, helper.ResponseOK("All users fetched", userResources))
 }
 
-func findUser(c echo.Context) error {
+func findUserAPI(c echo.Context) error {
     cc := c.(helper.CustomContext)
     user := models.User{}
 
@@ -37,7 +37,7 @@ func findUser(c echo.Context) error {
     return c.JSON(http.StatusOK, helper.ResponseOK("User fetched", user.Resource()))
 }
 
-func createUsers(c echo.Context) error {
+func createUsersAPI(c echo.Context) error {
     cc := c.(helper.CustomContext)
 
     name := c.FormValue("name")
@@ -61,7 +61,7 @@ func createUsers(c echo.Context) error {
     return c.JSON(http.StatusOK, helper.ResponseOK("User creation success", user.Resource()))
 }
 
-func updateUsers(c echo.Context) error {
+func updateUsersAPI(c echo.Context) error {
     cc := c.(helper.CustomContext)
     user := models.User{}
     result := cc.Database.Where(map[string]interface{}{ "ID" : cc.Param("id")  }).First(&user)
@@ -85,16 +85,16 @@ func updateUsers(c echo.Context) error {
     return c.JSON(http.StatusOK, helper.ResponseOK("User updated", user.Resource()))
 }
 
-func destroyUsers(c echo.Context) error {
+func destroyUsersAPI(c echo.Context) error {
     cc := c.(helper.CustomContext)
     cc.Database.Delete(&models.User{}, cc.Param("id"))
     return c.JSON(http.StatusOK, helper.ResponseOK("User is destroyed", nil))
 }
 
-func UserController(g *echo.Group) {
-    g.GET("", listUsers)
-    g.GET("/:id", findUser)
-    g.POST("", createUsers)
-    g.PUT("/:id", updateUsers)
-    g.DELETE("/:id", destroyUsers)
+func UserAPIController(g *echo.Group) {
+    g.GET("", listUsersAPI)
+    g.GET("/:id", findUserAPI)
+    g.POST("", createUsersAPI)
+    g.PUT("/:id", updateUsersAPI)
+    g.DELETE("/:id", destroyUsersAPI)
 }
