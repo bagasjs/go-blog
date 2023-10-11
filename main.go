@@ -43,7 +43,14 @@ func main() {
             if cwd, err = os.Getwd(); err != nil {
                 panic(err.Error())
             }
-            if err = os.Mkdir(path.Join(cwd, "res"), 664); err != nil {
+
+            if err = os.Mkdir(path.Join(cwd, "res"), os.ModePerm); err != nil {
+                panic(err.Error())
+            }
+            if err = os.Mkdir(path.Join(cwd, "res/assets"), os.ModePerm); err != nil {
+                panic(err.Error())
+            }
+            if err = os.Mkdir(path.Join(cwd, "res/views"), os.ModePerm); err != nil {
                 panic(err.Error())
             }
 
@@ -67,6 +74,9 @@ func main() {
 
 func Serve() {
     e := echo.New()
+    e.Renderer = helper.NewTemplate("./res/views/*.html")
+    e.Static("/static", "./res/assets")
+
     db, err := gorm.Open(sqlite.Open("./res/db.sqlite3"), &gorm.Config{})
     if err != nil {
         panic("Failed to open database connection")
@@ -85,7 +95,7 @@ func Serve() {
     })
 
     e.GET("/", func(c echo.Context) error {
-        return c.String(http.StatusOK, "Hello, World")
+        return c.Render(http.StatusOK, "index.html", nil)
     })
 
     var g *echo.Group
